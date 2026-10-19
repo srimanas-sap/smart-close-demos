@@ -1,0 +1,150 @@
+sources:
+  salesforce_api:
+    type: http
+    baseUrl: https://storm-6e64dee6501f91.my.salesforce.com/
+  sap_sales_order_service:
+    type: odata
+    baseUrl: https://sapongcpdemos.apimanagement.us30.hana.ondemand.com:443/MS_DEMOS_API_SALES_ORDER_SRV/
+    queryParams:
+      sap-client: "100"
+    disableSslVerification: true
+    useClientOauth: "X-SAP-Auth"
+    authStrategy: "sap-gateway"
+    auth:
+      type: "x509"
+      clientCert: "/etc/sap-cert/client.crt"
+      clientKey: "/etc/sap-key/client.key"
+
+  sap_material_stock_service:
+    type: odata
+    baseUrl: https://sapongcpdemos.apimanagement.us30.hana.ondemand.com:443/MS_DEMOS_API_MATERIAL_STOCK_SRV/
+    queryParams:
+      sap-client: "100"
+    disableSslVerification: true
+    useClientOauth: "X-SAP-Auth"
+    authStrategy: "sap-gateway"
+    auth:
+      type: "x509"
+      clientCert: "/etc/sap-cert/client.crt"
+      clientKey: "/etc/sap-key/client.key"
+
+  sap_credit_management_service:
+    type: odata
+    baseUrl: https://sapongcpdemos.apimanagement.us30.hana.ondemand.com:443/MS_DEMOS_API_CRDTMBUSINESSPARTNER/
+    queryParams:
+      sap-client: "100"
+    disableSslVerification: true
+    useClientOauth: "X-SAP-Auth"
+    authStrategy: "sap-gateway"
+    auth:
+      type: "x509"
+      clientCert: "/etc/sap-cert/client.crt"
+      clientKey: "/etc/sap-key/client.key"
+
+tools:
+  execute_soql_query:
+    type: http
+    description: "Execute a SOQL query in Salesforce."
+    source: salesforce_api
+    path: services/data/v58.0/query
+    method: GET
+  create_salesforce_quote:
+    type: http
+    description: "Create a quote in Salesforce."
+    source: salesforce_api
+    path: services/data/v58.0/sobjects/Quote
+    method: POST
+  create_salesforce_quote_line_item:
+    type: http
+    description: "Create a quote line item in Salesforce."
+    source: salesforce_api
+    path: services/data/v58.0/sobjects/QuoteLineItem
+    method: POST
+  update_salesforce_opportunity:
+    type: http
+    description: "Update an opportunity in Salesforce."
+    source: salesforce_api
+    path: services/data/v58.0/sobjects/Opportunity
+    method: PATCH
+
+  create_sales_order_header:
+    type: odata
+    source: sap_sales_order_service
+    entitySet: A_SalesOrder
+    operation: CREATE
+    description: "Create a sales order header in SAP."
+    bodyParams:
+      - name: SalesOrderType
+        description: Value for SalesOrderType
+        type: string
+      - name: SalesOrganization
+        description: Value for SalesOrganization
+        type: string
+      - name: DistributionChannel
+        description: Value for DistributionChannel
+        type: string
+      - name: OrganizationDivision
+        description: Value for OrganizationDivision
+        type: string
+      - name: SoldToParty
+        description: Value for SoldToParty
+        type: string
+      - name: PurchaseOrderByCustomer
+        description: Value for PurchaseOrderByCustomer
+        type: string
+
+  create_sales_order_item:
+    type: odata
+    source: sap_sales_order_service
+    entitySet: A_SalesOrderItem
+    operation: CREATE
+    description: "Create a sales order item in SAP."
+    bodyParams:
+      - name: SalesOrder
+        description: Sales Order ID
+        type: string
+      - name: SalesOrderItem
+        description: Sales Order Item Number (e.g. 10)
+        type: string
+      - name: Material
+        description: Material Number (e.g. TG11)
+        type: string
+      - name: RequestedQuantity
+        description: Requested Quantity (e.g. 1)
+        type: string
+      - name: RequestedQuantityUnit
+        description: Unit of Measure (e.g. PC, EA)
+        type: string
+
+  read_sales_order_header:
+    type: odata
+    source: sap_sales_order_service
+    entitySet: A_SalesOrder
+    operation: READ
+    description: "Read sales order headers from SAP."
+
+  read_material_stock:
+    type: odata
+    source: sap_material_stock_service
+    entitySet: A_MatlStkInAcctMod
+    operation: READ
+    description: "Read material stock levels from SAP."
+
+  get_sap_credit_status:
+    type: odata
+    source: sap_credit_management_service
+    entitySet: CreditManagementAccount
+    operation: READ
+    description: "Get business partner credit status from SAP."
+
+toolsets:
+  all_tools:
+    - execute_soql_query
+    - create_salesforce_quote
+    - create_salesforce_quote_line_item
+    - update_salesforce_opportunity
+    - create_sales_order_header
+    - create_sales_order_item
+    - read_sales_order_header
+    - read_material_stock
+    - get_sap_credit_status

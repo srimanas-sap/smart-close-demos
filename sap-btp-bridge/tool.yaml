@@ -1,0 +1,180 @@
+sources:
+  mcp_api_sales_order_srv:
+    kind: http
+    baseUrl: https://sapongcpdemos.apimanagement.us30.hana.ondemand.com:443/MS_DEMOS_API_SALES_ORDER_SRV
+  mcp_api_material_stock_srv:
+    kind: http
+    baseUrl: https://sapongcpdemos.apimanagement.us30.hana.ondemand.com:443
+  salesforce_api:
+    kind: http
+    baseUrl: https://storm-6e64dee6501f91.my.salesforce.com
+
+tools:
+  create_sales_order_header:
+    kind: http
+    source: mcp_api_sales_order_srv
+    method: POST
+    path: /A_SalesOrder
+    description: Create a new Sales Order entity in SAP S/4HANA via BTP Principal Propagation
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The SAP Bearer token (retrieved via Destination Exchange on ms-smart-close-destination).
+      - name: X-CSRF-Token
+        type: string
+        description: The CSRF token fetched from GET /A_SalesOrder.
+    body:
+      type: object
+      properties:
+        SalesOrderType:
+          type: string
+          default: OR
+        SalesOrganization:
+          type: string
+          default: "1710"
+        DistributionChannel:
+          type: string
+          default: "10"
+        OrganizationDivision:
+          type: string
+          default: "00"
+        SoldToParty:
+          type: string
+          description: Customer number (e.g., 17100003)
+        PurchaseOrderByCustomer:
+          type: string
+          description: Customer PO Reference number
+
+  get_sales_order:
+    kind: http
+    source: mcp_api_sales_order_srv
+    method: GET
+    path: /A_SalesOrder('{SalesOrder}')
+    description: Reads header and line items of an existing Sales Order. Prompt user if SalesOrder ID is missing.
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The SAP Bearer token.
+    pathParams:
+      - name: SalesOrder
+        type: string
+        description: The Sales Order ID to view (e.g., 5159).
+
+  update_sales_order:
+    kind: http
+    source: mcp_api_sales_order_srv
+    method: PATCH
+    path: /A_SalesOrder('{SalesOrder}')
+    description: Updates an existing Sales Order. Prompt user to clarify which fields (PO Reference, Shipping Condition) to update if missing.
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The SAP Bearer token.
+      - name: X-CSRF-Token
+        type: string
+        description: The CSRF token.
+    pathParams:
+      - name: SalesOrder
+        type: string
+        description: The Sales Order ID to update.
+    body:
+      type: object
+      properties:
+        PurchaseOrderByCustomer:
+          type: string
+          description: Updated PO reference number
+        ShippingCondition:
+          type: string
+          description: Updated Shipping condition
+
+  execute_soql_query:
+    kind: http
+    source: salesforce_api
+    method: GET
+    path: /services/data/v58.0/query
+    description: Executes a SOQL query against Salesforce to retrieve data.
+    queryParams:
+      - name: q
+        type: string
+        description: The SOQL query string.
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The Salesforce Bearer token.
+
+  create_salesforce_quote:
+    kind: http
+    source: salesforce_api
+    method: POST
+    path: /services/data/v58.0/sobjects/Quote
+    description: Creates a new Quote record in Salesforce.
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The Salesforce Bearer token.
+    body:
+      type: object
+      properties:
+        OpportunityId:
+          type: string
+        Name:
+          type: string
+
+  create_salesforce_quote_line_item:
+    kind: http
+    source: salesforce_api
+    method: POST
+    path: /services/data/v58.0/sobjects/QuoteLineItem
+    description: Adds a line item to an existing Salesforce Quote.
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The Salesforce Bearer token.
+    body:
+      type: object
+      properties:
+        QuoteId:
+          type: string
+        PricebookEntryId:
+          type: string
+        Quantity:
+          type: number
+        UnitPrice:
+          type: number
+
+  update_salesforce_opportunity:
+    kind: http
+    source: salesforce_api
+    method: PATCH
+    path: /services/data/v58.0/sobjects/Opportunity/{opportunityId}
+    description: Updates an existing Opportunity record in Salesforce.
+    pathParams:
+      - name: opportunityId
+        type: string
+        description: The ID of the Opportunity to update.
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The Salesforce Bearer token.
+    body:
+      type: object
+      properties:
+        StageName:
+          type: string
+        SyncedQuoteId:
+          type: string
+
+  read_material_stock:
+    kind: http
+    source: mcp_api_material_stock_srv
+    method: GET
+    path: /MS_API_MATERIAL_STOCK_SRV/A_MatlStkInAcctMod
+    description: Reads material stock quantity in a specific plant.
+    queryParams:
+      - name: $filter
+        type: string
+        description: OData filter query for Material and Plant.
+    headerParams:
+      - name: Authorization
+        type: string
+        description: The SAP Bearer token.

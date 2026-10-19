@@ -1,0 +1,33 @@
+# Exclude local Git history and CI configurations
+.git
+.gitignore
+.github
+.gemini
+.ci
+.hugo
+
+# Exclude documentation and integration tests
+docs
+tests
+
+# Exclude compiled binaries and archive files
+mcp-toolbox
+mcp-toolbox.tar.gz
+mcp_toolbox_source.tar.gz
+*.tar.gz
+*.tgz
+*.zip
+
+# Exclude project documentation files
+CHANGELOG.md
+DEVELOPER.md
+README.md
+UPGRADING.md
+LICENSE
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+GEMINI.md
+CLAUDE.md
+AGENTS.md
+gemini-extension.json
+logo.png
